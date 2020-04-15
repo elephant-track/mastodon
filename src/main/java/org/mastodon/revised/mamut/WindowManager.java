@@ -46,6 +46,11 @@ import bdv.util.InvokeOnEDT;
 
 public class WindowManager
 {
+	public interface BdvViewCreatedListener
+	{
+		public void bdvViewCreated();
+	}
+
 	public static final String NEW_BDV_VIEW = "new bdv view";
 	public static final String NEW_TRACKSCHEME_VIEW = "new trackscheme view";
 	public static final String PREFERENCES_DIALOG = "Preferences";
@@ -128,6 +133,8 @@ public class WindowManager
 
 	final ProjectManager projectManager;
 
+	private final List< BdvViewCreatedListener > listeners;
+
 	public WindowManager( final Context context )
 	{
 		this.context = context;
@@ -183,6 +190,7 @@ public class WindowManager
 		globalAppActions.namedAction( tooglePreferencesDialogAction, PREFERENCES_DIALOG_KEYS );
 
 		updateEnabledActions();
+		listeners = new ArrayList<>();
 	}
 
 	private void discoverPlugins()
@@ -291,6 +299,7 @@ public class WindowManager
 		{
 			final MamutViewBdv view = new MamutViewBdv( appModel );
 			addBdvWindow( view );
+			notifyListeners();
 			return view;
 		}
 		return null;
@@ -421,5 +430,26 @@ public class WindowManager
 		context.inject( builder );
 		builder.discoverProviders();
 		return builder.build();
+	}
+
+	public synchronized boolean addBdvViewCreatedListner( final BdvViewCreatedListener listener )
+	{
+		if ( !listeners.contains( listener ) )
+		{
+			listeners.add( listener );
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized boolean removeBdvViewCreatedListner( final BdvViewCreatedListener listener )
+	{
+		return listeners.remove( listener );
+	}
+
+	private void notifyListeners()
+	{
+		for ( final BdvViewCreatedListener l : listeners )
+			l.bdvViewCreated();
 	}
 }
