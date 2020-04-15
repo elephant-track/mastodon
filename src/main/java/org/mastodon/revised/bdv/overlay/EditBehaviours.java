@@ -337,7 +337,7 @@ public class EditBehaviours< V extends OverlayVertex< V, E >, E extends OverlayE
 					eig.decomposeSymmetric( mat );
 					final double[] eigVals = eig.getRealEigenvalues();
 					for ( final double eigVal : eigVals )
-						if ( eigVal < MIN_RADIUS )
+						if ( factor < 0 && eigVal < MIN_RADIUS )
 							return;
 
 					vertex.setCovariance( mat );
