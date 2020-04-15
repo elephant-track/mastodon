@@ -116,4 +116,9 @@ public class MastodonView<
 		runOnClose.forEach( Runnable::run );
 		runOnClose.clear();
 	}
+
+	public GroupHandle getGroupHandle()
+	{
+		return groupHandle;
+	}
 }
