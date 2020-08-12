@@ -38,6 +38,8 @@ public class BdvContextProvider< V extends Vertex< E >, E extends Edge< V > >
 
 	private final OverlayContext< OverlayVertexWrapper< V, E > > overlayContext;
 
+	private final OverlayContextWrapper<V,E> overlayContextWrapper;
+
 	private Context< V > context;
 
 	public BdvContextProvider( final String name,
@@ -47,7 +49,7 @@ public class BdvContextProvider< V extends Vertex< E >, E extends Edge< V > >
 		this.name = name;
 		listeners = new Listeners.SynchronizedList<>( l -> l.contextChanged( context ) );
 		overlayContext = new OverlayContext<>( overlayGraph, renderer );
-		new OverlayContextWrapper<>( overlayContext, this::contextChanged );
+		overlayContextWrapper = new OverlayContextWrapper<>( overlayContext, this::contextChanged );
 	}
 
 	@Override
@@ -66,6 +68,11 @@ public class BdvContextProvider< V extends Vertex< E >, E extends Edge< V > >
 	public void transformChanged( final AffineTransform3D transform )
 	{
 		overlayContext.transformChanged( transform );
+	}
+
+	public OverlayContextWrapper<V,E> getOverlayContextWrapper()
+	{
+		return overlayContextWrapper;
 	}
 
 	/**
