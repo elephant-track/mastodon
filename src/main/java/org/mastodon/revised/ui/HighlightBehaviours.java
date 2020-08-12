@@ -1,5 +1,6 @@
 package org.mastodon.revised.ui;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.mastodon.graph.Edge;
@@ -113,16 +114,25 @@ public class HighlightBehaviours< V extends Vertex< E >, E extends Edge< V > >
 			final V v = highlight.getHighlightedVertex( ref );
 			if ( v != null )
 			{
-				lock.writeLock().lock();
 				try
 				{
-					graph.remove( v );
-					undo.setUndoPoint();
-					notify.notifyGraphChanged();
+					if (lock.writeLock().tryLock(5, TimeUnit.SECONDS))
+					{
+						try
+						{
+							graph.remove( v );
+							undo.setUndoPoint();
+							notify.notifyGraphChanged();
+						}
+						finally
+						{
+							lock.writeLock().unlock();
+						}
+					}
 				}
-				finally
+				catch ( InterruptedException e )
 				{
-					lock.writeLock().unlock();
+					e.printStackTrace();
 				}
 			}
 			graph.releaseRef( ref );
@@ -143,16 +153,26 @@ public class HighlightBehaviours< V extends Vertex< E >, E extends Edge< V > >
 			final E e = highlight.getHighlightedEdge( ref );
 			if ( e != null )
 			{
-				lock.writeLock().lock();
 				try
 				{
-					graph.remove( e );
-					undo.setUndoPoint();
-					notify.notifyGraphChanged();
+					if (lock.writeLock().tryLock(5, TimeUnit.SECONDS))
+					{
+						try
+						{
+							graph.remove( e );
+							undo.setUndoPoint();
+							notify.notifyGraphChanged();
+						}
+						finally
+						{
+							lock.writeLock().unlock();
+						}
+						
+					}
 				}
-				finally
+				catch ( InterruptedException e1 )
 				{
-					lock.writeLock().unlock();
+					e1.printStackTrace();
 				}
 			}
 			graph.releaseRef( ref );
