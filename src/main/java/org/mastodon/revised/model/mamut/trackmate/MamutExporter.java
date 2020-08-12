@@ -492,9 +492,14 @@ public class MamutExporter
 		attributes.add( new Attribute( EDGE_TARGET_ATTRIBUTE, Integer.toString( targetSpotID ) ) );
 
 		// Link features.
-		linkFeatureProjections.forEach( p -> attributes.add( new Attribute(
-				p.attributeName,
-				Double.toString( p.projection.value( edge ) ) ) ) );
+		linkFeatureProjections.forEach( p -> {
+			if ( attributes.stream().filter( attr -> attr.getName().equals( p.attributeName ) ).count() == 0 )
+			{
+				attributes.add( new Attribute(
+						p.attributeName,
+						Double.toString( p.projection.value( edge ) ) ) );
+			}
+		} );
 
 		final Element edgeElement = new Element( EDGE_TAG );
 		edgeElement.setAttributes( attributes );
@@ -547,9 +552,14 @@ public class MamutExporter
 		attributes.add( new Attribute( RADIUS_FEATURE_NAME, Double.toString( meanRadius ) ) );
 
 		// Spot features.
-		spotFeatureProjections.forEach( p -> attributes.add( new Attribute(
-				p.attributeName,
-				Double.toString( p.projection.value( spot ) ) ) ) );
+		spotFeatureProjections.forEach( p -> {
+			if ( attributes.stream().filter( attr -> attr.getName().equals( p.attributeName ) ).count() == 0 )
+			{
+				attributes.add( new Attribute(
+						p.attributeName,
+						Double.toString( p.projection.value( spot ) ) ) );
+			}
+		} );
 
 		final Element spotElement = new Element( SPOT_ELEMENT_TAG );
 		spotElement.setAttributes( attributes );
