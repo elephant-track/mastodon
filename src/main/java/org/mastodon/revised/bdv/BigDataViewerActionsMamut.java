@@ -60,14 +60,18 @@ public class BigDataViewerActionsMamut
 
 
 	public static final String BRIGHTNESS_SETTINGS = "brightness settings";
+	public static final String RECORD_MOVIE = "record movie";
 	public static final String SAVE_SETTINGS = "save settings";
 	public static final String LOAD_SETTINGS = "load settings";
 
 	static final String[] BRIGHTNESS_SETTINGS_KEYS         = new String[] { "S" };
+	static final String[] RECORD_MOVIE_KEYS                = new String[] { "F10" };
 	static final String[] SAVE_SETTINGS_KEYS               = new String[] { "F11" };
 	static final String[] LOAD_SETTINGS_KEYS               = new String[] { "F12" };
 
 	private final ToggleDialogAction toggleBrightnessDialogAction;
+	
+	private final ToggleDialogAction toggleRecordMovieDialogAction;
 
 	private final RunnableAction saveBdvSettingsAction;
 
@@ -92,7 +96,8 @@ public class BigDataViewerActionsMamut
 			descriptions.add( SET_BOOKMARK, SET_BOOKMARK_KEYS, "Set a labeled bookmark at the current location." );
 			descriptions.add( GO_TO_BOOKMARK, GO_TO_BOOKMARK_KEYS, "Retrieve a labeled bookmark location." );
 			descriptions.add( GO_TO_BOOKMARK_ROTATION, GO_TO_BOOKMARK_ROTATION_KEYS, "Retrieve a labeled bookmark, set only the orientation." );
-			descriptions.add( BRIGHTNESS_SETTINGS,BRIGHTNESS_SETTINGS_KEYS, "Show the Brightness&Colors dialog." );
+			descriptions.add( BRIGHTNESS_SETTINGS, BRIGHTNESS_SETTINGS_KEYS, "Show the Brightness&Colors dialog." );
+			descriptions.add( RECORD_MOVIE, RECORD_MOVIE_KEYS, "Show the record movie dialog." );
 			descriptions.add( SAVE_SETTINGS, SAVE_SETTINGS_KEYS, "Save the BigDataViewer settings to a settings.xml file." );
 			descriptions.add( LOAD_SETTINGS, LOAD_SETTINGS_KEYS, "Load the BigDataViewer settings from a settings.xml file." );
 		}
@@ -124,6 +129,7 @@ public class BigDataViewerActionsMamut
 		 * should be shared between multiple windows.
 		 */
 		actions.namedAction( ba.toggleBrightnessDialogAction, BRIGHTNESS_SETTINGS_KEYS );
+		actions.namedAction( ba.toggleRecordMovieDialogAction, RECORD_MOVIE_KEYS );
 		actions.namedAction( ba.saveBdvSettingsAction, SAVE_SETTINGS_KEYS );
 		actions.namedAction( ba.loadBdvSettingsAction, LOAD_SETTINGS_KEYS );
 	}
@@ -136,6 +142,7 @@ public class BigDataViewerActionsMamut
 		setBookmarkAction = new RunnableAction( SET_BOOKMARK, bdv.getBookmarksEditor()::initSetBookmark );
 
 		toggleBrightnessDialogAction = new ToggleDialogAction( BRIGHTNESS_SETTINGS, bdv.getBrightnessDialog() );
+		toggleRecordMovieDialogAction = new ToggleDialogAction( RECORD_MOVIE, bdv.getRecordMovieDialog() );
 		saveBdvSettingsAction = new RunnableAction( SAVE_SETTINGS, bdv::saveSettings );
 		loadBdvSettingsAction = new RunnableAction( LOAD_SETTINGS, bdv::loadSettings );
 	}

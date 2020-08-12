@@ -45,6 +45,7 @@ public class MamutMenuBuilder extends ViewMenuBuilder
 		menuTexts.put( BigDataViewerActionsMamut.LOAD_SETTINGS, "Load Bdv Settings" );
 		menuTexts.put( BigDataViewerActionsMamut.SAVE_SETTINGS, "Save Bdv Settings" );
 		menuTexts.put( BigDataViewerActionsMamut.BRIGHTNESS_SETTINGS, "Brightness & Color" );
+		menuTexts.put( BigDataViewerActionsMamut.RECORD_MOVIE, "Record Movie" );
 		menuTexts.put( BigDataViewerActionsMamut.VISIBILITY_AND_GROUPING, "Visibility & Grouping" );
 
 		menuTexts.put( TrackSchemeNavigationActions.NAVIGATE_CHILD, "Navigate to Child" );

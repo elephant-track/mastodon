@@ -108,6 +108,7 @@ public class MamutViewBdv extends MamutView< OverlayGraphWrapper< Spot, Link >, 
 				),
 				ViewMenuBuilder.menu( "Settings",
 						item( BigDataViewerActionsMamut.BRIGHTNESS_SETTINGS ),
+						item( BigDataViewerActionsMamut.RECORD_MOVIE ),
 						item( BigDataViewerActionsMamut.VISIBILITY_AND_GROUPING )
 				)
 		);

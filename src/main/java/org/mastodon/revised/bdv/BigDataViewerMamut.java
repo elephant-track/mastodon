@@ -37,6 +37,8 @@ import javax.swing.filechooser.FileFilter;
 
 import org.mastodon.grouping.GroupHandle;
 
+import bdv.export.ProgressWriterConsole;
+import bdv.tools.RecordMovieDialog;
 import bdv.tools.VisibilityAndGroupingDialog;
 import bdv.tools.bookmarks.BookmarksEditor;
 import bdv.tools.brightness.BrightnessDialog;
@@ -48,6 +50,8 @@ public class BigDataViewerMamut
 	private final ViewerPanelMamut viewer;
 
 	private final BrightnessDialog brightnessDialog;
+	
+	private final RecordMovieDialog recordMovieDialog;
 
 	private final VisibilityAndGroupingDialog visibilityAndGroupingDialog;
 
@@ -115,6 +119,9 @@ public class BigDataViewerMamut
 		bookmarkEditor.setInputMapsToBlock( Arrays.asList( "all" ) );
 
 		brightnessDialog = shared.getBrightnessDialog();
+		
+		recordMovieDialog = new RecordMovieDialog( viewerFrame, viewer, new ProgressWriterConsole() );
+		
 		visibilityAndGroupingDialog = new VisibilityAndGroupingDialog( viewerFrame, viewer.getVisibilityAndGrouping() );
 	}
 
@@ -131,6 +138,11 @@ public class BigDataViewerMamut
 	public BrightnessDialog getBrightnessDialog()
 	{
 		return brightnessDialog;
+	}
+	
+	public RecordMovieDialog getRecordMovieDialog()
+	{
+		return recordMovieDialog;
 	}
 
 	public VisibilityAndGroupingDialog getVisibilityAndGroupingDialog()
