@@ -48,7 +48,7 @@ public class WindowManager
 {
 	public interface BdvViewCreatedListener
 	{
-		public void bdvViewCreated();
+		public void bdvViewCreated( final MamutViewBdv view );
 	}
 
 	public static final String NEW_BDV_VIEW = "new bdv view";
@@ -299,7 +299,7 @@ public class WindowManager
 		{
 			final MamutViewBdv view = new MamutViewBdv( appModel );
 			addBdvWindow( view );
-			notifyListeners();
+			notifyListeners( view );
 			return view;
 		}
 		return null;
@@ -412,6 +412,11 @@ public class WindowManager
 	{
 		return context.getService( FeatureSpecsService.class );
 	}
+	
+	public List< MamutViewBdv > getBdvWindows()
+	{
+		return bdvWindows;
+	}
 
 	/**
 	 * Exposes the {@link ProjectManager} of this window manager, that handles
@@ -447,9 +452,9 @@ public class WindowManager
 		return listeners.remove( listener );
 	}
 
-	private void notifyListeners()
+	private void notifyListeners( final MamutViewBdv view )
 	{
 		for ( final BdvViewCreatedListener l : listeners )
-			l.bdvViewCreated();
+			l.bdvViewCreated( view );
 	}
 }
