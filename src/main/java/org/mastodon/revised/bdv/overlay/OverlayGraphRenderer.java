@@ -960,7 +960,7 @@ public class OverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends Ov
 	 * @return vertices that would be visible with the current display settings
 	 *         and the specified {@code transform} and {@code timepoint}.
 	 */
-	RefCollection< V > getVisibleVertices( final AffineTransform3D transform, final int timepoint )
+	public RefCollection< V > getVisibleVertices( final AffineTransform3D transform, final int timepoint )
 	{
 		final RefList< V > contextList = RefCollections.createRefList( graph.vertices() );
 		final double maxDepth = getMaxDepth( transform );
