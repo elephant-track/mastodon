@@ -12,6 +12,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
+import java.util.concurrent.TimeUnit;
 
 import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
@@ -489,147 +490,158 @@ public class OverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends Ov
 		final boolean drawPointsMaybe = drawPointsMaybe();
 		final boolean useGradient = settings.getUseGradient();
 
-		graph.getLock().readLock().lock();
-		index.readLock().lock();
 		try
 		{
-			if ( settings.getDrawLinks())
+			if(graph.getLock().readLock().tryLock(1, TimeUnit.SECONDS))
 			{
-				final E highlighted = highlight.getHighlightedEdge( ref3 );
-				graphics.setStroke( defaultEdgeStroke );
-				forEachVisibleEdge( transform, currentTimepoint, ( edge, td0, td1, sd0, sd1, x0, y0, x1, y1 ) -> {
-					final boolean isHighlighted = edge.equals( highlighted );
-
-					edge.getSource( source );
-					edge.getTarget( target );
-					final int edgeColor = coloring.color( edge, source, target );
-					final Color c1 = getColor( sd1, td1, sliceDistanceFade, timepointDistanceFade, selection.isSelected( edge ), isHighlighted, edgeColor );
-					if ( useGradient )
-					{
-						final Color c0 = getColor( sd0, td0, sliceDistanceFade, timepointDistanceFade, selection.isSelected( edge ), isHighlighted, edgeColor );
-						graphics.setPaint( new GradientPaint( x0, y0, c0, x1, y1, c1 ) );
-					}
-					else
-					{
-						graphics.setPaint( c1 );
-					}
-					if ( isHighlighted )
-						graphics.setStroke( highlightedEdgeStroke );
-					graphics.drawLine( x0, y0, x1, y1 );
-
-					// Draw arrows for edge direction.
-					/*
-					final double dx = x1 - x0;
-					final double dy = y1 - y0;
-					final double alpha = Math.atan2( dy, dx );
-					final double l = 5;
-					final double theta = Math.PI / 6.;
-					final int x1a = ( int ) Math.round( x1 - l * Math.cos( alpha - theta ) );
-					final int x1b = ( int ) Math.round( x1 - l * Math.cos( alpha + theta ) );
-					final int y1a = ( int ) Math.round( y1 - l * Math.sin( alpha - theta ) );
-					final int y1b = ( int ) Math.round( y1 - l * Math.sin( alpha + theta ) );
-					graphics.drawLine( x1, y1, x1a, y1a );
-					graphics.drawLine( x1, y1, x1b, y1b );
-					*/
-
-					if ( isHighlighted )
-						graphics.setStroke( defaultEdgeStroke );
-				} );
-			}
-
-			if ( settings.getDrawSpots() )
-			{
-				final double ellipsoidFadeDepth = settings.getEllipsoidFadeDepth();
-				final boolean drawSpotLabels = settings.getDrawSpotLabels();
-				final boolean drawEllipsoidSliceIntersection = settings.getDrawEllipsoidSliceIntersection();
-				final boolean drawEllipsoidSliceProjection = settings.getDrawEllipsoidSliceProjection();
-				final double pointFadeDepth = settings.getPointFadeDepth();
-
-				final V highlighted = highlight.getHighlightedVertex( ref1 );
-				final V focused = focus.getFocusedVertex( ref2 );
-
-				graphics.setStroke( defaultVertexStroke );
-				final AffineTransform torig = graphics.getTransform();
-
-				final ConvexPolytope cropPolytopeGlobal = getVisiblePolytopeGlobal( transform, currentTimepoint );
-				final ClipConvexPolytope< V > ccp = index.getSpatialIndex( currentTimepoint ).getClipConvexPolytope();
-				ccp.clip( cropPolytopeGlobal );
-				for ( final V vertex : ccp.getInsideValues() )
+				index.readLock().lock();
+				try
 				{
-					final int color = coloring.color( vertex );
-					final boolean isHighlighted = vertex.equals( highlighted );
-					final boolean isFocused = vertex.equals( focused );
-
-					screenVertexMath.init( vertex, transform );
-
-					final double x = screenVertexMath.getViewPos()[ 0 ];
-					final double y = screenVertexMath.getViewPos()[ 1 ];
-					final double z = screenVertexMath.getViewPos()[ 2 ];
-					final double sd = sliceDistance( z, maxDepth );
-
-					if ( drawEllipsoidSliceIntersection )
+					if ( settings.getDrawLinks())
 					{
-						if ( screenVertexMath.intersectsViewPlane() )
-						{
-							final Ellipse ellipse = screenVertexMath.getIntersectEllipse();
+						final E highlighted = highlight.getHighlightedEdge( ref3 );
+						graphics.setStroke( defaultEdgeStroke );
+						forEachVisibleEdge( transform, currentTimepoint, ( edge, td0, td1, sd0, sd1, x0, y0, x1, y1 ) -> {
+							final boolean isHighlighted = edge.equals( highlighted );
 
-							graphics.setColor( getColor( 0, 0, ellipsoidFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
+							edge.getSource( source );
+							edge.getTarget( target );
+							final int edgeColor = coloring.color( edge, source, target );
+							final Color c1 = getColor( sd1, td1, sliceDistanceFade, timepointDistanceFade, selection.isSelected( edge ), isHighlighted, edgeColor );
+							if ( useGradient )
+							{
+								final Color c0 = getColor( sd0, td0, sliceDistanceFade, timepointDistanceFade, selection.isSelected( edge ), isHighlighted, edgeColor );
+								graphics.setPaint( new GradientPaint( x0, y0, c0, x1, y1, c1 ) );
+							}
+							else
+							{
+								graphics.setPaint( c1 );
+							}
 							if ( isHighlighted )
-								graphics.setStroke( highlightedVertexStroke );
-							else if ( isFocused )
-								graphics.setStroke( focusedVertexStroke );
-							drawEllipse( graphics, ellipse, torig );
-							if ( isHighlighted || isFocused )
-								graphics.setStroke( defaultVertexStroke );
+								graphics.setStroke( highlightedEdgeStroke );
+							graphics.drawLine( x0, y0, x1, y1 );
 
-							if ( !drawEllipsoidSliceProjection && drawSpotLabels )
-								drawEllipseLabel( graphics, ellipse, vertex.getLabel() );
-						}
+							// Draw arrows for edge direction.
+							/*
+							final double dx = x1 - x0;
+							final double dy = y1 - y0;
+							final double alpha = Math.atan2( dy, dx );
+							final double l = 5;
+							final double theta = Math.PI / 6.;
+							final int x1a = ( int ) Math.round( x1 - l * Math.cos( alpha - theta ) );
+							final int x1b = ( int ) Math.round( x1 - l * Math.cos( alpha + theta ) );
+							final int y1a = ( int ) Math.round( y1 - l * Math.sin( alpha - theta ) );
+							final int y1b = ( int ) Math.round( y1 - l * Math.sin( alpha + theta ) );
+							graphics.drawLine( x1, y1, x1a, y1a );
+							graphics.drawLine( x1, y1, x1b, y1b );
+							*/
+
+							if ( isHighlighted )
+								graphics.setStroke( defaultEdgeStroke );
+						} );
 					}
 
-					if ( sd > -1 && sd < 1 )
+					if ( settings.getDrawSpots() )
 					{
-						if ( drawEllipsoidSliceProjection )
+						final double ellipsoidFadeDepth = settings.getEllipsoidFadeDepth();
+						final boolean drawSpotLabels = settings.getDrawSpotLabels();
+						final boolean fillSpots = settings.getFillSpots();
+						final boolean drawEllipsoidSliceIntersection = settings.getDrawEllipsoidSliceIntersection();
+						final boolean drawEllipsoidSliceProjection = settings.getDrawEllipsoidSliceProjection();
+						final double pointFadeDepth = settings.getPointFadeDepth();
+
+						final V highlighted = highlight.getHighlightedVertex( ref1 );
+						final V focused = focus.getFocusedVertex( ref2 );
+
+						graphics.setStroke( defaultVertexStroke );
+						final AffineTransform torig = graphics.getTransform();
+
+						final ConvexPolytope cropPolytopeGlobal = getVisiblePolytopeGlobal( transform, currentTimepoint );
+						final ClipConvexPolytope< V > ccp = index.getSpatialIndex( currentTimepoint ).getClipConvexPolytope();
+						ccp.clip( cropPolytopeGlobal );
+						for ( final V vertex : ccp.getInsideValues() )
 						{
-							final Ellipse ellipse = screenVertexMath.getProjectEllipse();
+							final int color = coloring.color( vertex );
+							final boolean isHighlighted = vertex.equals( highlighted );
+							final boolean isFocused = vertex.equals( focused );
 
-							graphics.setColor( getColor( sd, 0, ellipsoidFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
-							if ( isHighlighted )
-								graphics.setStroke( highlightedVertexStroke );
-							else if ( isFocused )
-								graphics.setStroke( focusedVertexStroke );
-							drawEllipse( graphics, ellipse, torig );
-							if ( isHighlighted || isFocused )
-								graphics.setStroke( defaultVertexStroke );
+							screenVertexMath.init( vertex, transform );
 
-							if ( drawSpotLabels )
-								drawEllipseLabel( graphics, ellipse, vertex.getLabel() );
+							final double x = screenVertexMath.getViewPos()[ 0 ];
+							final double y = screenVertexMath.getViewPos()[ 1 ];
+							final double z = screenVertexMath.getViewPos()[ 2 ];
+							final double sd = sliceDistance( z, maxDepth );
 
-							graphics.setTransform( torig );
-						}
+							if ( drawEllipsoidSliceIntersection )
+							{
+								if ( screenVertexMath.intersectsViewPlane() )
+								{
+									final Ellipse ellipse = screenVertexMath.getIntersectEllipse();
 
-						if ( drawPointsAlways || ( drawPointsMaybe && !screenVertexMath.intersectsViewPlane() ) )
-						{
-							graphics.setColor( getColor( sd, 0, pointFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
-							double radius = pointRadius;
-							if ( isHighlighted || isFocused )
-								radius *= 2;
-							final int ox = ( int ) ( x - radius );
-							final int oy = ( int ) ( y - radius );
-							final int ow = ( int ) ( 2 * radius );
-							if ( isFocused )
-								graphics.fillRect( ox, oy, ow, ow );
-							else
-								graphics.fillOval( ox, oy, ow, ow );
+									graphics.setColor( getColor( 0, 0, ellipsoidFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
+									if ( isHighlighted )
+										graphics.setStroke( highlightedVertexStroke );
+									else if ( isFocused )
+										graphics.setStroke( focusedVertexStroke );
+									drawEllipse( graphics, ellipse, torig, fillSpots );
+									if ( isHighlighted || isFocused )
+										graphics.setStroke( defaultVertexStroke );
+
+									if ( !drawEllipsoidSliceProjection && drawSpotLabels )
+										drawEllipseLabel( graphics, ellipse, vertex.getLabel() );
+								}
+							}
+
+							if ( sd > -1 && sd < 1 )
+							{
+								if ( drawEllipsoidSliceProjection )
+								{
+									final Ellipse ellipse = screenVertexMath.getProjectEllipse();
+
+									graphics.setColor( getColor( sd, 0, ellipsoidFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
+									if ( isHighlighted )
+										graphics.setStroke( highlightedVertexStroke );
+									else if ( isFocused )
+										graphics.setStroke( focusedVertexStroke );
+									drawEllipse( graphics, ellipse, torig, fillSpots );
+									if ( isHighlighted || isFocused )
+										graphics.setStroke( defaultVertexStroke );
+
+									if ( drawSpotLabels )
+										drawEllipseLabel( graphics, ellipse, vertex.getLabel() );
+
+									graphics.setTransform( torig );
+								}
+
+								if ( drawPointsAlways || ( drawPointsMaybe && !screenVertexMath.intersectsViewPlane() ) )
+								{
+									graphics.setColor( getColor( sd, 0, pointFadeDepth, timepointDistanceFade, selection.isSelected( vertex ), isHighlighted, color ) );
+									double radius = pointRadius;
+									if ( isHighlighted || isFocused )
+										radius *= 2;
+									final int ox = ( int ) ( x - radius );
+									final int oy = ( int ) ( y - radius );
+									final int ow = ( int ) ( 2 * radius );
+									if ( isFocused )
+										graphics.fillRect( ox, oy, ow, ow );
+									else
+										graphics.fillOval( ox, oy, ow, ow );
+								}
+							}
 						}
 					}
 				}
+				finally
+				{
+					graph.getLock().readLock().unlock();
+					index.readLock().unlock();
+				}			
 			}
 		}
-		finally
+		catch ( InterruptedException e )
 		{
-			graph.getLock().readLock().unlock();
-			index.readLock().unlock();
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		graph.releaseRef( ref1 );
 		graph.releaseRef( ref2 );
