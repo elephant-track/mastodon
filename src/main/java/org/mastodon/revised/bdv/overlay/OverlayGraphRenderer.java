@@ -265,7 +265,7 @@ public class OverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends Ov
 			final double r = ( 1 - td ) * r0 / 255;
 			final double g = ( 1 - td ) * g0 / 255;
 			final double b = ( 1 - td ) * b0 / 255;
-			final double a = Math.max(
+			final double a = a0 == 0 ? 0 : Math.max(
 					isHighlighted ? 0.8 : ( isSelected ? 0.6 : 0.4 ),
 					a0 / 255f * ( 1 + tf ) * ( 1 - Math.abs( sf ) ) );
 			return new Color( truncRGBA( r, g, b, a ), true );
@@ -649,8 +649,13 @@ public class OverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends Ov
 		graph.releaseRef( source );
 		graph.releaseRef( target );
 	}
-
+	
 	static void drawEllipse( final Graphics2D graphics, final Ellipse ellipse, AffineTransform torig )
+	{
+		drawEllipse( graphics, ellipse, torig, false );
+	}
+
+	static void drawEllipse( final Graphics2D graphics, final Ellipse ellipse, AffineTransform torig, final boolean fillSpots )
 	{
 		if ( torig == null )
 			torig = graphics.getTransform();
@@ -663,8 +668,18 @@ public class OverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends Ov
 
 		graphics.translate( tr[ 0 ], tr[ 1 ] );
 		graphics.rotate( theta );
-		graphics.draw( ellipse2D );
-
+		if (fillSpots)
+		{
+			graphics.fill( ellipse2D );
+			Color color = graphics.getColor();
+			graphics.setColor( Color.BLACK );
+			graphics.draw( ellipse2D );
+			graphics.setColor( color );	
+		}
+		else
+		{
+			graphics.draw( ellipse2D );
+		}
 		graphics.setTransform( torig );
 	}
 

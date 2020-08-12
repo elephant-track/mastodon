@@ -125,6 +125,7 @@ public class RenderSettingsPanel extends JPanel
 				booleanElement( "draw spot centers", style::getDrawSpotCenters, style::setDrawSpotCenters ),
 				booleanElement( "draw spot centers for ellipses", style::getDrawSpotCentersForEllipses, style::setDrawSpotCentersForEllipses ),
 				booleanElement( "draw spot labels", style::getDrawSpotLabels, style::setDrawSpotLabels ),
+				booleanElement( "fill spots", style::getFillSpots, style::setFillSpots ),
 
 				separator(),
 
