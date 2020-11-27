@@ -28,6 +28,7 @@ public class RenderSettings implements Style< RenderSettings >
 	public static final boolean DEFAULT_FILL_SPOTS = false;
 	public static final boolean DEFAULT_IS_FOCUS_LIMIT_RELATIVE = true;
 	public static final double DEFAULT_ELLIPSOID_FADE_DEPTH = 0.2;
+	public static final double DEFAULT_POINT_FADE_DEPTH = 0;
 	public static final double DEFAULT_SPOT_STROKE_WIDTH = 1f;
 	public static final double DEFAULT_LINK_STROKE_WIDTH = 1f;
 
@@ -789,6 +790,7 @@ public class RenderSettings implements Style< RenderSettings >
 		df.focusLimit = DEFAULT_LIMIT_FOCUS_RANGE;
 		df.isFocusLimitViewRelative = DEFAULT_IS_FOCUS_LIMIT_RELATIVE;
 		df.ellipsoidFadeDepth = DEFAULT_ELLIPSOID_FADE_DEPTH;
+		df.pointFadeDepth = DEFAULT_POINT_FADE_DEPTH;
 		df.spotStrokeWidth = DEFAULT_SPOT_STROKE_WIDTH;
 		df.linkStrokeWidth = DEFAULT_LINK_STROKE_WIDTH;
 		df.name = "Default";

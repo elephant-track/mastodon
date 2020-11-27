@@ -155,12 +155,15 @@ public class RenderSettingsIO
 			mapping.put( "drawLinks", s.getDrawLinks() );
 			mapping.put( "timeRangeForLinks", s.getTimeLimit() );
 			mapping.put( "gradientForLinks", s.getUseGradient() );
+			mapping.put( "linkStrokeWidth", s.getLinkStrokeWidth() );
 			mapping.put( "drawSpots", s.getDrawSpots() );
 			mapping.put( "drawEllipsoidIntersection", s.getDrawEllipsoidSliceIntersection() );
 			mapping.put( "drawEllipsoidProjection", s.getDrawEllipsoidSliceProjection() );
 			mapping.put( "drawSpotCenters", s.getDrawSpotCenters() );
 			mapping.put( "drawSpotCentersForEllipses", s.getDrawSpotCentersForEllipses() );
 			mapping.put( "drawSpotLabels", s.getDrawSpotLabels() );
+			mapping.put( "fillSpots", s.getFillSpots() );
+			mapping.put( "spotStrokeWidth", s.getSpotStrokeWidth() );
 			mapping.put( "focusLimit", s.getFocusLimit() );
 			mapping.put( "focusLimitViewRelative", s.getFocusLimitViewRelative() );
 			mapping.put( "ellipsoidFadeDepth", s.getEllipsoidFadeDepth() );
@@ -189,20 +192,40 @@ public class RenderSettingsIO
 
 				s.setName( ( String ) mapping.get( "name") );
 
-				s.setUseAntialiasing( ( boolean ) mapping.get( "antialiasing" ) );
-				s.setDrawLinks( ( boolean ) mapping.get( "drawLinks" ) );
-				s.setTimeLimit( ( int ) mapping.get( "timeRangeForLinks" ) );
-				s.setUseGradient( ( boolean ) mapping.get( "gradientForLinks" ) );
-				s.setDrawSpots( ( boolean ) mapping.get( "drawSpots" ) );
-				s.setDrawEllipsoidSliceIntersection( ( boolean ) mapping.get( "drawEllipsoidIntersection" ) );
-				s.setDrawEllipsoidSliceProjection( ( boolean ) mapping.get( "drawEllipsoidProjection" ) );
-				s.setDrawSpotCenters( ( boolean ) mapping.get( "drawSpotCenters" ) );
-				s.setDrawSpotCentersForEllipses( ( boolean ) mapping.get( "drawSpotCentersForEllipses" ) );
-				s.setDrawSpotLabels( ( boolean ) mapping.get( "drawSpotLabels" ) );
-				s.setFocusLimit( ( double ) mapping.get( "focusLimit" ) );
-				s.setFocusLimitViewRelative( ( boolean ) mapping.get( "focusLimitViewRelative" ) );
-				s.setEllipsoidFadeDepth( ( double ) mapping.get( "ellipsoidFadeDepth" ) );
-				s.setPointFadeDepth( ( double ) mapping.get( "pointFadeDepth" ) );
+				s.setUseAntialiasing( mapping.containsKey( "antialiasing" ) ?
+						( boolean ) mapping.get( "antialiasing" ) : RenderSettings.DEFAULT_USE_ANTI_ALIASING );
+				s.setDrawLinks( mapping.containsKey( "drawLinks" ) ?
+						( boolean ) mapping.get( "drawLinks" ) : RenderSettings.DEFAULT_DRAW_LINKS );
+				s.setTimeLimit( mapping.containsKey( "timeRangeForLinks" ) ?
+						( int ) mapping.get( "timeRangeForLinks" ) : RenderSettings.DEFAULT_LIMIT_TIME_RANGE );
+				s.setUseGradient( mapping.containsKey( "gradientForLinks" ) ?
+						( boolean ) mapping.get( "gradientForLinks" ) : RenderSettings.DEFAULT_USE_GRADIENT );
+				s.setLinkStrokeWidth( mapping.containsKey( "linkStrokeWidth" ) ?
+						( double ) mapping.get( "linkStrokeWidth" ) : RenderSettings.DEFAULT_LINK_STROKE_WIDTH );
+				s.setDrawSpots( mapping.containsKey( "drawSpots" ) ?
+						( boolean ) mapping.get( "drawSpots" ) : RenderSettings.DEFAULT_DRAW_SPOTS );
+				s.setDrawEllipsoidSliceIntersection( mapping.containsKey( "drawEllipsoidIntersection" ) ?
+						( boolean ) mapping.get( "drawEllipsoidIntersection" ) : RenderSettings.DEFAULT_DRAW_SLICE_INTERSECTION );
+				s.setDrawEllipsoidSliceProjection( mapping.containsKey( "drawEllipsoidProjection" ) ?
+						( boolean ) mapping.get( "drawEllipsoidProjection" ) : RenderSettings.DEFAULT_DRAW_SLICE_PROJECTION );
+				s.setDrawSpotCenters( mapping.containsKey( "drawSpotCenters" ) ?
+						( boolean ) mapping.get( "drawSpotCenters" ) : RenderSettings.DEFAULT_DRAW_POINTS );
+				s.setDrawSpotCentersForEllipses( mapping.containsKey( "drawSpotCentersForEllipses" ) ?
+						( boolean ) mapping.get( "drawSpotCentersForEllipses" ) : RenderSettings.DEFAULT_DRAW_POINTS_FOR_ELLIPSE );
+				s.setDrawSpotLabels( mapping.containsKey( "drawSpotLabels" ) ?
+						( boolean ) mapping.get( "drawSpotLabels" ) : RenderSettings.DEFAULT_DRAW_SPOT_LABELS );
+				s.setFillSpots( mapping.containsKey( "fillSpots" ) ?
+						( boolean ) mapping.get( "fillSpots" ) : RenderSettings.DEFAULT_FILL_SPOTS );
+				s.setSpotStrokeWidth( mapping.containsKey( "spotStrokeWidth" ) ?
+						( double ) mapping.get( "spotStrokeWidth" ) : RenderSettings.DEFAULT_SPOT_STROKE_WIDTH );
+				s.setFocusLimit( mapping.containsKey( "focusLimit" ) ?
+						( double ) mapping.get( "focusLimit" ) : RenderSettings.DEFAULT_LIMIT_FOCUS_RANGE );
+				s.setFocusLimitViewRelative( mapping.containsKey( "focusLimitViewRelative" ) ?
+						( boolean ) mapping.get( "focusLimitViewRelative" ) : RenderSettings.DEFAULT_IS_FOCUS_LIMIT_RELATIVE );
+				s.setEllipsoidFadeDepth( mapping.containsKey( "ellipsoidFadeDepth" ) ?
+						( double ) mapping.get( "ellipsoidFadeDepth" ) : RenderSettings.DEFAULT_ELLIPSOID_FADE_DEPTH );
+				s.setPointFadeDepth( mapping.containsKey( "pointFadeDepth" ) ?
+						( double ) mapping.get( "pointFadeDepth" ) : RenderSettings.DEFAULT_POINT_FADE_DEPTH );
 
 				return s;
 			}
