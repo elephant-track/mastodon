@@ -120,6 +120,12 @@ public class SelectAndEditProfileSettingsPage< T extends SelectAndEditProfileSet
 		profileSelectionPanel.makeModel();
 		profileEditPanel.loadProfile( profileManager.getSelectedProfile() );
 	}
+	
+	public void reload()
+	{
+		profileSelectionPanel.reload();
+		profileEditPanel.loadProfile( profileManager.getSelectedProfile() );
+	}
 
 	/**
 	 * Interface for the objects that are edited and selected in a
@@ -320,6 +326,13 @@ public class SelectAndEditProfileSettingsPage< T extends SelectAndEditProfileSet
 				editor.loadProfile( manager.getSelectedProfile() );
 				makeModel();
 			}
+		}
+		
+		private void reload()
+		{
+			selectionListeners.list.forEach( l -> l.selected( manager.getSelectedProfile() ) );
+			editor.loadProfile( manager.getSelectedProfile() );
+			makeModel();
 		}
 
 		private void renameSelected()
