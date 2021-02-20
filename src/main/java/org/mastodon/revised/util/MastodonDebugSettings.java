@@ -76,7 +76,7 @@ public interface MastodonDebugSettings
 			return instance;
 		}
 
-		private static final String STYLE_FILE = System.getProperty( "user.home" ) + "/.mastodon/debug.yaml";
+		private static final String STYLE_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/debug.yaml";
 
 		private static void save( final DebugSettingsImpl debugSettings )
 		{

@@ -40,14 +40,14 @@ import org.yaml.snakeyaml.Yaml;
 public class ColorMap
 {
 
-	private static final String COLORMAP_FILE = System.getProperty( "user.home" ) + "/.mastodon/colormaps.yaml";
+	private static final String COLORMAP_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/colormaps.yaml";
 
 	private static final List< URI > LUT_FOLDERS = new ArrayList<>();
 	static
 	{
 		try
 		{
-			final URI USER_LUT_FOLDER = new URI( "file:///" + System.getProperty( "user.home" ) + "/.mastodon/luts/" );
+			final URI USER_LUT_FOLDER = new URI( "file:///" + System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/luts/" );
 			LUT_FOLDERS.add( USER_LUT_FOLDER );
 			final URI BUILTIN_LUT_FOLDER = ColorMap.class.getResource( "luts/" ).toURI();
 			LUT_FOLDERS.add( BUILTIN_LUT_FOLDER );

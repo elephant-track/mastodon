@@ -17,7 +17,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class FeatureColorModeManager extends AbstractStyleManager< FeatureColorModeManager, FeatureColorMode >
 {
-	private static final String COLOR_MODE_FILE = System.getProperty( "user.home" ) + "/.mastodon/colormodes.yaml";
+	private static final String COLOR_MODE_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/colormodes.yaml";
 
 	public interface FeatureColorModesListener
 	{

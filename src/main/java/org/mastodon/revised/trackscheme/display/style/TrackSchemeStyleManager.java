@@ -25,7 +25,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class TrackSchemeStyleManager extends AbstractStyleManager< TrackSchemeStyleManager, TrackSchemeStyle >
 {
-	private static final String STYLE_FILE = System.getProperty( "user.home" ) + "/.mastodon/trackschemestyles.yaml";
+	private static final String STYLE_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/trackschemestyles.yaml";
 
 	/**
 	 * A {@code TrackSchemeStyle} that has the same properties as the default

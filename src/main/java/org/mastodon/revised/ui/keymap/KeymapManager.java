@@ -35,7 +35,7 @@ import org.yaml.snakeyaml.representer.Representer;
  */
 public class KeymapManager extends AbstractStyleManager< KeymapManager, Keymap >
 {
-	private static final String KEYMAPS_PATH = System.getProperty( "user.home" ) + "/.mastodon/keymaps/";
+	private static final String KEYMAPS_PATH = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/keymaps/";
 
 	/**
 	 * A {@code Keymap} that has the same properties as the default

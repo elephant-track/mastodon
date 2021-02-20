@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class RenderSettingsManager extends AbstractStyleManager< RenderSettingsManager, RenderSettings >
 {
-	private static final String STYLE_FILE = System.getProperty( "user.home" ) + "/.mastodon/rendersettings.yaml";
+	private static final String STYLE_FILE = System.getProperty( "user.home" ).replace("\\", "/") + "/.mastodon/rendersettings.yaml";
 
 	/**
 	 * A {@code RenderSettings} that has the same properties as the default

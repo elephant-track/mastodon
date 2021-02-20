@@ -73,6 +73,6 @@ public class Mastodon extends ContextCommand
 //			YamlConfigIO.write( new InputTriggerDescriptionsBuilder( keyconf ).getDescriptions(), new PrintWriter( System.out ) );
 		} );
 
-//		DumpInputConfig.writeDefaultConfigToYaml( System.getProperty( "user.home" ) + "/Desktop/DEFAULT.keyconfig.yaml", new Context() );
+//		DumpInputConfig.writeDefaultConfigToYaml( System.getProperty( "user.home" ).replace("\\", "/") + "/Desktop/DEFAULT.keyconfig.yaml", new Context() );
 	}
 }
