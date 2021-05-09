@@ -39,6 +39,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.mastodon.model.FocusModel;
@@ -349,48 +350,57 @@ public class EditSpecialBehaviours< V extends OverlayVertex< V, E >, E extends O
 				 * abort.
 				 */
 				lock.readLock().unlock();
-				lock.writeLock().lock();
 				try
 				{
-					source.getInternalPoolIndex();
-					if ( renderer.getVertexAt( x, y, POINT_SELECT_DISTANCE_TOLERANCE, target ) != null )
+					if (lock.writeLock().tryLock(1, TimeUnit.SECONDS))
 					{
-						target.localize( overlay.to );
-
-						/*
-						 * Careful with directed graphs. We always check and
-						 * create links forward in time.
-						 */
-						final V from = forward ? source : target;
-						final V to = forward ? target : source;
-						final E edge = overlayGraph.getEdge( from, to, edgeRef );
-						if ( null == edge )
-							overlayGraph.addEdge( from, to, edgeRef ).init();
-						else
-							overlayGraph.remove( edge );
-
-						overlayGraph.notifyGraphChanged();
-						undo.setUndoPoint();
-
-						if ( FOCUS_EDITED_SPOT )
-							focus.focusVertex( target );
-
-						if ( SELECT_ADDED_SPOT )
+						try
 						{
-							selection.pauseListeners();
-							selection.clearSelection();
-							selection.setSelected( target, true );
-							selection.resumeListeners();
+							source.getInternalPoolIndex();
+							if ( renderer.getVertexAt( x, y, POINT_SELECT_DISTANCE_TOLERANCE, target ) != null )
+							{
+								target.localize( overlay.to );
+
+								/*
+								* Careful with directed graphs. We always check and
+								* create links forward in time.
+								*/
+								final V from = forward ? source : target;
+								final V to = forward ? target : source;
+								final E edge = overlayGraph.getEdge( from, to, edgeRef );
+								if ( null == edge )
+									overlayGraph.addEdge( from, to, edgeRef ).init();
+								else
+									overlayGraph.remove( edge );
+
+								overlayGraph.notifyGraphChanged();
+								undo.setUndoPoint();
+
+								if ( FOCUS_EDITED_SPOT )
+									focus.focusVertex( target );
+
+								if ( SELECT_ADDED_SPOT )
+								{
+									selection.pauseListeners();
+									selection.clearSelection();
+									selection.setSelected( target, true );
+									selection.resumeListeners();
+								}
+							}
+
+							overlay.paintGhostVertex = false;
+							overlay.paintGhostLink = false;
+							editing = false;
+						}
+						finally
+						{
+							lock.writeLock().unlock();
 						}
 					}
-
-					overlay.paintGhostVertex = false;
-					overlay.paintGhostLink = false;
-					editing = false;
 				}
-				finally
+				catch ( InterruptedException e )
 				{
-					lock.writeLock().unlock();
+					e.printStackTrace();
 				}
 			}
 		}
