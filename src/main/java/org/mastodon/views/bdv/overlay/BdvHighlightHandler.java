@@ -32,6 +32,7 @@ import bdv.viewer.TransformListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.concurrent.TimeUnit;
 
 import org.mastodon.model.HighlightModel;
 
@@ -84,25 +85,34 @@ public class BdvHighlightHandler< V extends OverlayVertex< V, E >, E extends Ove
 
 	private void highlight()
 	{
-		final V vertex = overlayGraph.vertexRef();
-		final E edge = overlayGraph.edgeRef();
-		overlayGraph.getLock().readLock().lock();
 		try
 		{
-			// See if we can find an edge.
-			if ( renderer.getEdgeAt( x, y, BdvSelectionBehaviours.EDGE_SELECT_DISTANCE_TOLERANCE, edge ) != null )
-				highlight.highlightEdge( edge );
-			// See if we can find a vertex.
-			else if ( renderer.getVertexAt( x, y, BdvSelectionBehaviours.POINT_SELECT_DISTANCE_TOLERANCE, vertex ) != null )
-				highlight.highlightVertex( vertex );
-			else
-				highlight.clearHighlight();
+			if (overlayGraph.getLock().readLock().tryLock(1, TimeUnit.SECONDS))
+			{
+				final V vertex = overlayGraph.vertexRef();
+				final E edge = overlayGraph.edgeRef();
+				try
+				{
+					// See if we can find an edge.
+					if ( renderer.getEdgeAt( x, y, BdvSelectionBehaviours.EDGE_SELECT_DISTANCE_TOLERANCE, edge ) != null )
+						highlight.highlightEdge( edge );
+					// See if we can find a vertex.
+					else if ( renderer.getVertexAt( x, y, BdvSelectionBehaviours.POINT_SELECT_DISTANCE_TOLERANCE, vertex ) != null )
+						highlight.highlightVertex( vertex );
+					else
+						highlight.clearHighlight();
+				}
+				finally
+				{
+					overlayGraph.getLock().readLock().unlock();
+					overlayGraph.releaseRef( vertex );
+					overlayGraph.releaseRef( edge );
+				}
+			}
 		}
-		finally
+		catch ( InterruptedException e )
 		{
-			overlayGraph.getLock().readLock().unlock();
-			overlayGraph.releaseRef( vertex );
-			overlayGraph.releaseRef( edge );
+			e.printStackTrace();
 		}
 	}
 
