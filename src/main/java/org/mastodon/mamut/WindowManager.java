@@ -188,7 +188,7 @@ public class WindowManager
 
 	final ProjectManager projectManager;
 
-	private final Listeners.List< BdvViewCreatedListener > bdvViewCreatedListeners;
+	private Listeners.List< BdvViewCreatedListener > bdvViewCreatedListeners;
 
 	public WindowManager( final Context context )
 	{
@@ -249,8 +249,6 @@ public class WindowManager
 		globalAppActions.namedAction( tooglePreferencesDialogAction, PREFERENCES_DIALOG_KEYS );
 
 		updateEnabledActions();
-
-		bdvViewCreatedListeners = new Listeners.SynchronizedList<>();
 	}
 
 	private void discoverPlugins()
@@ -288,6 +286,8 @@ public class WindowManager
 	void setAppModel( final MamutAppModel appModel )
 	{
 		closeAllWindows();
+
+		bdvViewCreatedListeners = new Listeners.SynchronizedList<>();
 
 		this.appModel = appModel;
 		if ( appModel == null )
