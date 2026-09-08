@@ -180,11 +180,14 @@ public class GeffExporter
 	}
 
 	/**
-	 * Flattens a symmetric 3×3 covariance matrix to the upper-triangular
-	 * 6-element vector {@code [m00, m01, m02, m11, m12, m22]} used by Geff.
+	 * Flattens a 3×3 covariance matrix to the 9 elements of the row-major
+	 * 3×3 matrix used by Geff.
 	 */
 	static double[] matrixToFlat3x3( final double[][] m )
 	{
-		return new double[] { m[ 0 ][ 0 ], m[ 0 ][ 1 ], m[ 0 ][ 2 ], m[ 1 ][ 1 ], m[ 1 ][ 2 ], m[ 2 ][ 2 ] };
+		return new double[] {
+				m[ 0 ][ 0 ], m[ 0 ][ 1 ], m[ 0 ][ 2 ],
+				m[ 1 ][ 0 ], m[ 1 ][ 1 ], m[ 1 ][ 2 ],
+				m[ 2 ][ 0 ], m[ 2 ][ 1 ], m[ 2 ][ 2 ] };
 	}
 }

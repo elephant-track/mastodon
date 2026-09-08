@@ -29,6 +29,7 @@
 package org.mastodon.mamut.io.importer.geff;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,23 +127,11 @@ public class GeffImporter extends ModelImporter
 			{
 				pos[ 0 ] = node.getX();
 				pos[ 1 ] = node.getY();
-				pos[ 2 ] = node.getZ();
+				// A dataset without a third spatial axis reports z as NaN;
+				// put its spots into the z = 0 plane.
+				pos[ 2 ] = Double.isNaN( node.getZ() ) ? 0 : node.getZ();
 
-				final Spot spot;
-				final double[] cov3d = node.getCovariance3d();
-				if ( cov3d != null )
-				{
-					final double[][] cov = flatToMatrix3x3( cov3d );
-					spot = graph.addVertex( vRef1 ).init( node.getT(), pos, cov );
-				}
-				else if ( node.getRadius() > 0 )
-				{
-					spot = graph.addVertex( vRef1 ).init( node.getT(), pos, node.getRadius() );
-				}
-				else
-				{
-					spot = graph.addVertex( vRef1 ).init( node.getT(), pos, GeffNode.DEFAULT_RADIUS );
-				}
+				final Spot spot = addSpot( graph, vRef1, node, pos );
 
 				// Store segmentId as feature if set
 				if ( node.getSegmentId() != 0 )
@@ -194,20 +183,96 @@ public class GeffImporter extends ModelImporter
 	}
 
 	/**
-	 * Converts a flat 6-element upper-triangular covariance vector
-	 * {@code [c0,c1,c2,c3,c4,c5]} (row-major) to a symmetric 3×3 matrix:
+	 * Adds a {@link Spot} for {@code node}, shaping it from the node's
+	 * covariance matrix when available, falling back to a radius otherwise.
+	 */
+	private static Spot addSpot( final ModelGraph graph, final Spot vRef, final GeffNode node, final double[] pos )
+	{
+		final double[][] cov = covariance( node );
+		return cov != null
+				? graph.addVertex( vRef ).init( node.getT(), pos, cov )
+				: graph.addVertex( vRef ).init( node.getT(), pos, effectiveRadius( node ) );
+	}
+
+	/**
+	 * The 3×3 covariance matrix to shape the spot of {@code node} with, or
+	 * {@code null} if the node carries no shape information.
+	 * <p>
+	 * {@code covariance3d} takes precedence; {@code covariance2d} is used for
+	 * datasets without a third spatial axis, which declare that one only. An
+	 * identity matrix is what Geff falls back to for a covariance the dataset
+	 * does not store, and carries no shape information either way.
+	 */
+	private static double[][] covariance( final GeffNode node )
+	{
+		final double[] cov3d = node.getCovariance3d();
+		if ( cov3d != null )
+		{
+			if ( cov3d.length != 9 )
+				throw new IllegalArgumentException(
+						"GEFF node covariance3d must be the 9 elements of a row-major 3×3 matrix, but got length "
+								+ cov3d.length );
+			if ( !Arrays.equals( cov3d, GeffNode.DEFAULT_COVARIANCE_3D ) )
+				return flatToMatrix3x3( cov3d );
+		}
+
+		final double[] cov2d = node.getCovariance2d();
+		if ( cov2d != null )
+		{
+			if ( cov2d.length != 4 )
+				throw new IllegalArgumentException(
+						"GEFF node covariance2d must be the 4 elements of a row-major 2×2 matrix, but got length "
+								+ cov2d.length );
+			if ( !Arrays.equals( cov2d, GeffNode.DEFAULT_COVARIANCE_2D ) )
+				return flat2x2ToMatrix3x3( cov2d );
+		}
+
+		return null;
+	}
+
+	private static double effectiveRadius( final GeffNode node )
+	{
+		return node.getRadius() > 0 ? node.getRadius() : GeffNode.DEFAULT_RADIUS;
+	}
+
+	/**
+	 * Unflattens the 9 elements {@code [c0,...,c8]} of the row-major 3×3
+	 * covariance matrix used by Geff:
 	 * <pre>
 	 * [[c0, c1, c2],
-	 *  [c1, c3, c4],
-	 *  [c2, c4, c5]]
+	 *  [c3, c4, c5],
+	 *  [c6, c7, c8]]
 	 * </pre>
 	 */
 	static double[][] flatToMatrix3x3( final double[] c )
 	{
 		return new double[][] {
 				{ c[ 0 ], c[ 1 ], c[ 2 ] },
-				{ c[ 1 ], c[ 3 ], c[ 4 ] },
-				{ c[ 2 ], c[ 4 ], c[ 5 ] }
+				{ c[ 3 ], c[ 4 ], c[ 5 ] },
+				{ c[ 6 ], c[ 7 ], c[ 8 ] }
+		};
+	}
+
+	/**
+	 * Expands the 4 elements {@code [c0,...,c3]} of the row-major 2×2
+	 * covariance matrix used by Geff to a 3×3 matrix:
+	 * <pre>
+	 * [[c0, c1, 0 ],
+	 *  [c2, c3, 0 ],
+	 *  [ 0,  0, zz]]
+	 * </pre>
+	 * A dataset that stores a 2D covariance says nothing about the extent
+	 * along z, so {@code zz} is the mean of the two in-plane variances, which
+	 * makes the spot about as thick as it is wide and keeps the matrix
+	 * positive definite.
+	 */
+	static double[][] flat2x2ToMatrix3x3( final double[] c )
+	{
+		final double zz = 0.5 * ( c[ 0 ] + c[ 3 ] );
+		return new double[][] {
+				{ c[ 0 ], c[ 1 ], 0 },
+				{ c[ 2 ], c[ 3 ], 0 },
+				{ 0, 0, zz }
 		};
 	}
 }
