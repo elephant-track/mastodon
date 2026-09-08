@@ -33,6 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.janelia.saalfeldlab.n5.N5Reader;
+import org.janelia.saalfeldlab.n5.universe.N5Factory;
+import org.janelia.saalfeldlab.n5.universe.options.N5FactoryOptions;
 import org.mastodon.feature.Dimension;
 import org.mastodon.feature.FeatureModel;
 import org.mastodon.mamut.ProjectModel;
@@ -50,6 +53,11 @@ import org.mastodon.geff.GeffNode;
 
 public class GeffImporter extends ModelImporter
 {
+
+	/**
+	 * The group of the Zarr container that holds the GEFF dataset.
+	 */
+	private static final String GROUP = "/";
 
 	/**
 	 * Imports the Geff Zarr dataset at {@code zarrPath} into the model of
@@ -88,9 +96,20 @@ public class GeffImporter extends ModelImporter
 		startImport();
 		try
 		{
-			final GeffMetadata metadata = GeffMetadata.readFromZarr( zarrPath );
-			final List< GeffNode > nodes = GeffNode.readFromZarr( zarrPath, metadata );
-			final List< GeffEdge > edges = GeffEdge.readFromZarr( zarrPath, metadata.getGeffVersion() );
+			final GeffMetadata metadata;
+			final List< GeffNode > nodes;
+			final List< GeffEdge > edges;
+			// The GeffXxx.readFromZarr() methods are hard-wired to a Zarr v2
+			// reader, which finds no attributes at all in a Zarr v3 container.
+			// Let the N5 universe factory pick the reader matching the Zarr
+			// version of the container instead.
+			try ( final N5Reader reader =
+					new N5Factory().setOptions( new N5FactoryOptions().cacheAttributes( true ) ).openReader( zarrPath ) )
+			{
+				metadata = GeffMetadata.readFromN5( reader, GROUP );
+				nodes = GeffNode.readFromN5( reader, GROUP, metadata );
+				edges = GeffEdge.readFromN5( reader, GROUP, metadata.getGeffVersion() );
+			}
 
 			// Feature storage
 			final GeffImportedSpotFeatures spotFeatures = new GeffImportedSpotFeatures();

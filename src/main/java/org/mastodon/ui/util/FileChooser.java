@@ -228,9 +228,14 @@ public class FileChooser
 
 			/*
 			 * Try with a FilenameFilter (may silently fail).
+			 *
+			 * The native macOS directory chooser never consults the
+			 * FilenameFilter, so don't even try with one there: the fallback
+			 * below would always pop up a second dialog.
 			 */
 			final AtomicBoolean workedWithFilenameFilter = new AtomicBoolean( false );
-			if ( fileFilter != null )
+			boolean shown = false;
+			if ( fileFilter != null && !( isMac() && isDirectoriesOnly ) )
 			{
 				final FilenameFilter filenameFilter = new FilenameFilter()
 				{
@@ -250,8 +255,14 @@ public class FileChooser
 				};
 				fd.setFilenameFilter( filenameFilter );
 				fd.setVisible( true );
+				shown = true;
 			}
-			if ( fileFilter == null || ( isMac() && !workedWithFilenameFilter.get() ) )
+			/*
+			 * If the FilenameFilter was silently ignored, show the dialog again
+			 * without it -- but only if nothing was selected, so that a
+			 * selection the user already made is not thrown away.
+			 */
+			if ( !shown || ( isMac() && !workedWithFilenameFilter.get() && fd.getFile() == null ) )
 			{
 				fd.setFilenameFilter( null );
 				fd.setVisible( true );
