@@ -61,6 +61,24 @@ public class GeffImporter extends ModelImporter
 	private static final String GROUP = "/";
 
 	/**
+	 * The number of standard deviations the ellipsoid of an imported spot is
+	 * scaled to.
+	 * <p>
+	 * Mastodon uses the covariance of a spot as the matrix of the ellipsoid
+	 * itself, so that a spot of radius {@code r} has the covariance
+	 * {@code r²I} and the ellipsoid spans one standard deviation of the
+	 * Gaussian the covariance describes. The GEFF spec defines no such
+	 * convention for its {@code covariance2d}/{@code covariance3d} ellipsoid
+	 * properties, which typically hold the plain covariance of a fit or of a
+	 * segmented region, and whose one-sigma ellipsoid is much smaller than the
+	 * object it describes. Scale by this many sigmas to match the default of
+	 * the TGMM importer, which renders two-sigma ellipsoids as well.
+	 *
+	 * @see org.mastodon.mamut.io.importer.tgmm.TgmmImporter
+	 */
+	public static final double N_SIGMAS = 2;
+
+	/**
 	 * Imports the Geff Zarr dataset at {@code zarrPath} into the model of
 	 * {@code projectModel}.
 	 */
@@ -202,6 +220,11 @@ public class GeffImporter extends ModelImporter
 	 * datasets without a third spatial axis, which declare that one only. An
 	 * identity matrix is what Geff falls back to for a covariance the dataset
 	 * does not store, and carries no shape information either way.
+	 * <p>
+	 * The returned matrix is scaled to {@link #N_SIGMAS} sigmas. A radius, in
+	 * contrast, is a length rather than a standard deviation and is used
+	 * unscaled; the two agree for a dataset whose radius is the extent its
+	 * covariance describes.
 	 */
 	private static double[][] covariance( final GeffNode node )
 	{
@@ -213,7 +236,7 @@ public class GeffImporter extends ModelImporter
 						"GEFF node covariance3d must be the 9 elements of a row-major 3×3 matrix, but got length "
 								+ cov3d.length );
 			if ( !Arrays.equals( cov3d, GeffNode.DEFAULT_COVARIANCE_3D ) )
-				return flatToMatrix3x3( cov3d );
+				return scale( flatToMatrix3x3( cov3d ), N_SIGMAS * N_SIGMAS );
 		}
 
 		final double[] cov2d = node.getCovariance2d();
@@ -224,7 +247,7 @@ public class GeffImporter extends ModelImporter
 						"GEFF node covariance2d must be the 4 elements of a row-major 2×2 matrix, but got length "
 								+ cov2d.length );
 			if ( !Arrays.equals( cov2d, GeffNode.DEFAULT_COVARIANCE_2D ) )
-				return flat2x2ToMatrix3x3( cov2d );
+				return scale( flat2x2ToMatrix3x3( cov2d ), N_SIGMAS * N_SIGMAS );
 		}
 
 		return null;
@@ -233,6 +256,17 @@ public class GeffImporter extends ModelImporter
 	private static double effectiveRadius( final GeffNode node )
 	{
 		return node.getRadius() > 0 ? node.getRadius() : GeffNode.DEFAULT_RADIUS;
+	}
+
+	/**
+	 * Multiplies {@code m} by {@code factor} in place and returns it.
+	 */
+	private static double[][] scale( final double[][] m, final double factor )
+	{
+		for ( final double[] row : m )
+			for ( int c = 0; c < row.length; ++c )
+				row[ c ] *= factor;
+		return m;
 	}
 
 	/**

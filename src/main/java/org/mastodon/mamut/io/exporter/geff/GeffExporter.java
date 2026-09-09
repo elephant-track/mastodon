@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.mastodon.mamut.ProjectModel;
+import org.mastodon.mamut.io.importer.geff.GeffImporter;
 import org.mastodon.mamut.model.Link;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.ModelGraph;
@@ -85,7 +86,7 @@ public class GeffExporter
 						.y( spot.getDoublePosition( 1 ) )
 						.z( spot.getDoublePosition( 2 ) )
 						.radius( radius )
-						.covariance3d( matrixToFlat3x3( cov ) )
+						.covariance3d( toGeffCovariance3d( cov ) )
 						.build();
 				nodes.add( node );
 				// Use a copy of the spot reference as the map key
@@ -180,14 +181,19 @@ public class GeffExporter
 	}
 
 	/**
-	 * Flattens a 3×3 covariance matrix to the 9 elements of the row-major
-	 * 3×3 matrix used by Geff.
+	 * Converts the 3×3 ellipsoid matrix of a spot to the 9 elements of the
+	 * row-major 3×3 covariance matrix used by Geff, undoing the sigma scaling
+	 * the importer applies so that a Mastodon → Geff → Mastodon round trip
+	 * leaves the spot unchanged.
+	 *
+	 * @see GeffImporter#N_SIGMAS
 	 */
-	static double[] matrixToFlat3x3( final double[][] m )
+	static double[] toGeffCovariance3d( final double[][] m )
 	{
+		final double s = 1 / ( GeffImporter.N_SIGMAS * GeffImporter.N_SIGMAS );
 		return new double[] {
-				m[ 0 ][ 0 ], m[ 0 ][ 1 ], m[ 0 ][ 2 ],
-				m[ 1 ][ 0 ], m[ 1 ][ 1 ], m[ 1 ][ 2 ],
-				m[ 2 ][ 0 ], m[ 2 ][ 1 ], m[ 2 ][ 2 ] };
+				s * m[ 0 ][ 0 ], s * m[ 0 ][ 1 ], s * m[ 0 ][ 2 ],
+				s * m[ 1 ][ 0 ], s * m[ 1 ][ 1 ], s * m[ 1 ][ 2 ],
+				s * m[ 2 ][ 0 ], s * m[ 2 ][ 1 ], s * m[ 2 ][ 2 ] };
 	}
 }
